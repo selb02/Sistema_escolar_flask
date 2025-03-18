@@ -9,44 +9,51 @@ turmas = []
 @meuApp.route('/aluno', methods=['POST'])
 def create_alunos():
     data = request.json
-    aluno = {
-        'id': len(alunos) + 1,
-        'nome': data['nome'],
-        'idade': data['idade'],
-        'turma_id': data['turma'],
-        'data_nascimento': data['data_nascimento'],
-        'nota_primeiro_semestre': data['nota_primeiro_semestre'],
-        'nota_segundo_semestre': data['nota_segundo_semestre'],
-        'media_final': data['media_final']
-    }
+    
+    campos = [
+        'nome', 'idade', 'turma_id', 'data_nascimento',
+        'nota_primeiro_semestre', 'nota_segundo_semestre', 'media_final'
+    ]
+    
+    campos_vazio = [campo for campo in campos if not data.get(campo)]
+    if campos_vazio:
+        return jsonify({'mensagem': f'Esse/s campo/s sao obrigatorios e nao podem estar vazios: {",".join(campos_vazio)}'}),400
+    
+    aluno = {'id': len(alunos) + 1, **{campo: data[campo] for campo in campos}}
     alunos.append(aluno)
     return jsonify(aluno), 201
 
 @meuApp.route('/professor', methods=['POST'])
 def create_professor():
     data = request.json
-    professor = {
-        'id': len(professores) + 1,
-        'nome': data['nome'],
-        'idade': data['idade'],
-        'materia': data['materia'],
-        'observacoes': data['observacoes']
-    }
+    
+    campos = [
+        'nome', 'idade', 'materia', 'observacoes'
+    ]
+    
+    campos_vazio = [campo for campo in campos if not data.get(campo)]
+    if campos_vazio:
+        return jsonify({'mensagem': f'Esse(s) campo(s) sao obrigatorios e nao podem estar vazios: {",".join(campos_vazio)}'}),400
+    
+    professor = {'id': len(professores) + 1, **{campo: data[campo] for campo in campos}}
     professores.append(professor)
     return jsonify(professor), 201
 
 @meuApp.route('/turma', methods=['POST'])
 def create_turma():
     data = request.json
-    turma = {
-        'id': len(turmas) + 1,
-        'descricao': data['descricao'],
-        'professor_id': data['professor_id'],
-        'ativo': data['ativo']
-    }
-    turmas.append(turma)
+    
+    campos = [
+        'descricao', 'professor_id', 'ativo'
+    ]
+    
+    campos_vazio = [campo for campo in campos if not data.get(campo)]
+    if campos_vazio:
+        return jsonify({'mensagem': f'Esse/s campo/s sao obrigatorios e nao podem estar vazios: {",".join(campos_vazio)}'}),400
+    
+    turma = {'id': len(turmas) + 1, **{campo: data[campo] for campo in campos}}
+    professores.append(turma)
     return jsonify(turma), 201
-
 
 
 
@@ -89,7 +96,7 @@ def get_turma(turma_id):
 
 
 
-@meuApp.route('/aluno/<int:user_id>', methods=['DELETE'])
+@meuApp.route('/aluno/<int:aluno_id>', methods=['DELETE'])
 def delete_aluno(aluno_id):
     for aluno in alunos:
         if aluno['id'] == aluno_id:
@@ -97,7 +104,7 @@ def delete_aluno(aluno_id):
             return jsonify({'mensagem': 'Aluno removido'})
     return jsonify({'mensagem': 'Aluno não encontrado'}), 404
 
-@meuApp.route('/professor/<int:user_id>', methods=['DELETE'])
+@meuApp.route('/professor/<int:professor_id>', methods=['DELETE'])
 def delete_professor(professor_id):
     for professor in professores:
         if professor['id'] == professor_id:
@@ -105,7 +112,7 @@ def delete_professor(professor_id):
             return jsonify({'mensagem': 'Professor removido'})
     return jsonify({'mensagem': 'Professor não encontrado'}), 404
 
-@meuApp.route('/turma/<int:user_id>', methods=['DELETE'])
+@meuApp.route('/turma/<int:turma_id>', methods=['DELETE'])
 def delete_turma(turma_id):
     for turma in turmas:
         if turma['id'] == turma_id:
@@ -121,49 +128,73 @@ def update_aluno(aluno_id):
     for aluno in alunos:
         if aluno['id'] == aluno_id:
             dados = request.json
+            if not dados:
+                return jsonify({'mensagem': 'Nenhum dado enviado'}), 400 
+            
             campos = [
                 'nome', 'idade', 'turma_id', 'data_nascimento',
                 'nota_primeiro_semestre', 'nota_segundo_semestre', 'media_final'
             ]
+            
             for campo in campos:
-                novo_valor = dados.get(campo)
-                if novo_valor: 
-                    aluno[campo] = novo_valor
-            return jsonify(aluno)
-    
+                if campo in dados and (dados[campo] is None or dados[campo] == ""):
+                    return jsonify({'mensagem': f'O campo "{campo}" não pode estar vazio'}), 400
+                
+            for campo in campos:
+                if campo in dados:
+                    aluno[campo] = dados[campo]
+            return jsonify(aluno), 200
+        
     return jsonify({'mensagem': 'Aluno não encontrado'}), 404
 
-@meuApp.route('/professor/<int:aluno_id>', methods=['PUT'])
+@meuApp.route('/professor/<int:professor_id>', methods=['PUT'])
 def update_professor(professor_id):
     for professor in professores:
         if professor['id'] == professor_id:
             dados = request.json
+            if not dados:
+                return jsonify({'mensagem': 'Nenhum dado enviado'}), 400  
+
             campos = [
-                    'nome', 'idade', 'materia', 'observacoes'
+                'nome', 'idade', 'materia', 'obeservacoes'
             ]
+
             for campo in campos:
-                novo_valor = dados.get(campo)
-                if novo_valor: 
-                    professor[campo] = novo_valor
-            return jsonify(professor)
+                if campo in dados and (dados[campo] is None or dados[campo] == ""):
+                    return jsonify({'mensagem': f'O campo "{campo}" não pode estar vazio'}), 400
+
+            for campo in campos:
+                if campo in dados:
+                    professor[campo] = dados[campo]
+            return jsonify(professor), 200
     
     return jsonify({'mensagem': 'professor não encontrado'}), 404
 
-@meuApp.route('/turma/<int:aluno_id>', methods=['PUT'])
+@meuApp.route('/turma/<int:turma_id>', methods=['PUT'])
 def update_turma(turma_id):
     for turma in turmas:
         if turma['id'] == turma_id:
             dados = request.json
+            if not dados:
+                return jsonify({'mensagem': 'Nenhum dado enviado'}), 400 
+
             campos = [
-                    'descricao', 'professor_id', 'ativo'
+                'descricao', 'professor_id', 'ativo'
             ]
+
             for campo in campos:
-                novo_valor = dados.get(campo)
-                if novo_valor: 
-                    turma[campo] = novo_valor
-            return jsonify(turma)
+                if campo in dados and (dados[campo] is None or dados[campo] == ""):
+                    return jsonify({'mensagem': f'O campo "{campo}" não pode estar vazio'}), 400
+
+            for campo in campos:
+                if campo in dados:
+                    turma[campo] = dados[campo]
+            return jsonify(turma), 200
     
-    return jsonify({'mensagem': 'turma não encontrada'}), 404
+    return jsonify({'mensagem': 'Aluno não encontrado'}), 404
+
+
+
 
 
 
