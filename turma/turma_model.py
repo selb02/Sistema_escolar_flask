@@ -29,7 +29,7 @@ def turma_por_id(turma_id):
     for turma in lista_turmas:
         if turma["id"] == turma_id:
             return turma
-        raise Turmanaoencontrada
+    raise Turmanaoencontrada
     
 def delete_turma(turma_id):
         for turma in turmas:

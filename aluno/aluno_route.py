@@ -35,9 +35,9 @@ def get_aluno(aluno_id):
 def delete_aluno(aluno_id):
     try:
         delete_aluno(aluno_id)
-        return jsonify({'mensagem': 'Professor removido'}), 204
+        return jsonify({'mensagem': 'Aluno removido'}), 204
     except AlunoNaoEncontrado:
-        return jsonify({'message': 'Aluno não encontrado'}), 404
+        return jsonify({'messagem': 'Aluno não encontrado'}), 404
 
 
 @alunos_blueprint.route('/aluno/int:aluno_id', methods=['PUT'])
