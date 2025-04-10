@@ -2,8 +2,9 @@ turmas = []
 class Turmanaoencontrada (Exception):
     pass
 
-class CamposVazio (Exception):
-    pass
+class CamposVazio(Exception):
+    def __init__(self, campos_vazios):
+        self.campos_vazios = campos_vazios
 
 class NenhumDado (Exception):
     pass
@@ -15,7 +16,7 @@ def create_turma(data):
     
     campos_vazio = [ campo for campo in campos if not data.get(campo)]
     if campos_vazio:
-        return campos_vazio
+        raise CamposVazio(campos_vazio)
     
     turma = {'id': len(turmas) +1, **{campo: data[campo] for campo in campos }}
     turmas.append(turma)
@@ -35,6 +36,9 @@ def delete_turma(turma_id):
         for turma in turmas:
             if turma ['id'] == turma_id:
                 turmas.remove(turma)
+                return
+            else:
+                raise Turmanaoencontrada
 
 
 def update_turma(turma_id, novos_dados):
@@ -50,10 +54,10 @@ def update_turma(turma_id, novos_dados):
             for campo in campos: 
                 if campo in dados and (dados[campo]is None or dados[campo]== ""):
                     campos_vazio.append(campo)
-                    return campos_vazio
+                    raise CamposVazio(campos_vazio)
                 
                 for campo in campos:
                     if campo in dados:
                         turma[campo]= dados[campo]
-                        return turma
-                    else: Turmanaoencontrada
+                return turma
+    raise Turmanaoencontrada

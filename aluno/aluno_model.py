@@ -20,7 +20,7 @@ def create_aluno(data):
 
     campos_vazio = [campo for campo in campos if not data.get(campo)]
     if campos_vazio:
-        return campos_vazio
+        raise CampoVazio(campos_vazio)
     aluno = {'id': len(alunos) + 1, 'media_final': (float(data['nota_primeiro_semestre']) + float(data['nota_segundo_semestre'])) / 2, **{campo: data[campo] for campo in campos}}
     alunos.append(aluno)
     return aluno
@@ -33,12 +33,15 @@ def aluno_por_id(id_aluno):
     for aluno in lista_alunos:
         if aluno['id'] == id_aluno:
             return aluno
-    raise AlunoNaoEncontrado
+        else:
+            raise AlunoNaoEncontrado
 
-def delete_aluno(id_aluno):
+def delete_aluno(aluno_id):
     for aluno in alunos:
-        if aluno['id'] == id_aluno:
+        if aluno['id'] == aluno_id:
             alunos.remove(aluno)
+        else:
+            raise AlunoNaoEncontrado
 
 def update_aluno(id_aluno, novos_dados):
     for aluno in alunos:
@@ -56,11 +59,20 @@ def update_aluno(id_aluno, novos_dados):
             for campo in campos:
                 if campo in dados and (dados[campo] is None or dados[campo] == ""):
                     campos_vazios.append(campo)
-                    return campos_vazios
+
+
+            if campos_vazios:
+                raise CampoVazio(campos_vazios)
 
             for campo in campos:
                 if campo in dados:
                     aluno[campo] = dados[campo]
+            
+            if 'nota_primeiro_semestre' in aluno and 'nota_segundo_semestre' in aluno:
+                try:
+                    aluno['media_final'] = (float(aluno['nota_primeiro_semestre']) + float(aluno['nota_segundo_semestre'])) / 2
+                except ValueError:
+                    pass  
+
             return aluno
-        else:
-            raise AlunoNaoEncontrado
+    raise AlunoNaoEncontrado

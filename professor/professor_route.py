@@ -4,47 +4,47 @@ from .professor_model import ProfessorNaoEncontrado, CampoVazio, NenhumDado, get
 professor_blueprint = Blueprint('professor', __name__)
 
 @professor_blueprint.route('/professor/<int:professor_id>', methods=['GET'])
-def get_professor(professor_id):
+def pegar_professor(professor_id):
     try:
         professor = get_professor(professor_id)
-        return jsonify(professor)
+        return jsonify(professor), 200
     except ProfessorNaoEncontrado:
         return jsonify({'mensagem': 'Professor não encontrado'}), 404
 
 @professor_blueprint.route('/professor', methods=['GET'])
 def get_professores():
-    return jsonify({'professores': listar_professor()})
+    return jsonify({'professores': listar_professor()}), 200
 
 @professor_blueprint.route('/professor', methods=['POST'])
-def create_professor():
+def criando_professor():
     data = request.json
     try:
         professor = create_professor(data)
         return jsonify(professor), 201
-    except CampoVazio:
-        professor = create_professor(data)
-        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(professor)}'}), 400
+    except CampoVazio as e:
+        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(e.args[0])}'}), 400
+
 
 
 @professor_blueprint.route('/professor/<int:professor_id>', methods=['PUT'])
-def update_professor(professor_id):
+def atualizar_professor(professor_id):
     data = request.json
     try:
         professor_atualizado = update_professor(professor_id, data)
         return jsonify(professor_atualizado), 200
     except ProfessorNaoEncontrado:
-        return jsonify({'mensagem': 'Professor nã encontrado'}), 404
+        return jsonify({'mensagem': 'Professor não encontrado'}), 404
     except NenhumDado:
-        return jsonify({'mensagem': 'Nnhum dado enviado'}), 400
-    except CampoVazio:
-        professor_atualizado = update_professor(professor_id, data)
-        return jsonify({'mensagem': f'O campo "{professor_atualizado}" não pode estar vazio'}), 400
+        return jsonify({'mensagem': 'Nenhum dado enviado'}), 400
+    except CampoVazio as e:
+        return jsonify({'mensagem': f'Os seguintes campos não podem estar vazios: {", ".join(e.args[0])}'}), 400
+
 
 
 @professor_blueprint.route('/professor/<int:professor_id>', methods=['DELETE'])
-def delete_professor(professor_id):
+def deletar_professor(professor_id):
     try:
         delete_professor(professor_id)
-        return jsonify({'mensagem': 'Professor removido'}), 204
+        return jsonify({'mensagem': 'Professor removido'}), 200
     except ProfessorNaoEncontrado:
         return jsonify({'mensagem': 'Professor não encontrado'}), 404

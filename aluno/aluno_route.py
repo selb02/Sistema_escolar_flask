@@ -10,38 +10,38 @@ def create_alunos():
     try:
         aluno = create_aluno(data)
         return jsonify(aluno), 201
-    except CampoVazio:
-        aluno = create_aluno(data)
-        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(aluno)}'}), 400
+    except CampoVazio as e:
+        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(e.args[0])}'}), 400
 
 
 
 
-@alunos_blueprint.route('/alunos', methods=['GET'])
+
+@alunos_blueprint.route('/aluno', methods=['GET'])
 def get_alunos():
-    return jsonify({'alunos':listar_alunos()})
+    return jsonify({'alunos':listar_alunos()}), 200
 
 
 @alunos_blueprint.route('/aluno/<int:aluno_id>', methods=['GET'])
 def get_aluno(aluno_id):
     try:
         aluno = aluno_por_id(aluno_id)
-        return jsonify(aluno)
+        return jsonify(aluno), 200
     except AlunoNaoEncontrado:
-        return jsonify({'messagem': 'Aluno não encontrado'}), 404
+        return jsonify({'mensagem': 'Aluno não encontrado'}), 404
 
 
 @alunos_blueprint.route('/aluno/<int:aluno_id>', methods=['DELETE'])
-def delete_aluno(aluno_id):
+def deletar_aluno(aluno_id):
     try:
         delete_aluno(aluno_id)
-        return jsonify({'mensagem': 'Aluno removido'}), 204
+        return jsonify({'mensagem': 'Aluno removido'}), 200
     except AlunoNaoEncontrado:
-        return jsonify({'messagem': 'Aluno não encontrado'}), 404
+        return jsonify({'mensagem': 'Aluno não encontrado'}), 404
 
 
-@alunos_blueprint.route('/aluno/int:aluno_id', methods=['PUT'])
-def update_aluno(aluno_id):
+@alunos_blueprint.route('/aluno/<int:aluno_id>', methods=['PUT'])
+def atualizar_aluno(aluno_id):
     data = request.json
     try:
         aluno_atualizado = update_aluno(aluno_id, data)
@@ -50,6 +50,5 @@ def update_aluno(aluno_id):
         return jsonify({'mensagem': 'Aluno não encontrado'}), 404
     except NenhumDado:
         return jsonify({'mensagem': 'Nenhum dado enviado'}), 400
-    except CampoVazio:
-        aluno_atualizado = update_aluno(aluno_id, data)
-        return jsonify({'mensagem': f'O campo "{aluno_atualizado}" não pode estar vazio'}), 400
+    except CampoVazio as e:
+        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(e.args[0])}'}), 400
