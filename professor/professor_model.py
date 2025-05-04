@@ -1,71 +1,101 @@
+from datetime import datetime, date
+from config import db
 
-professores= []
+class Professor (db.Model): 
+    __tablename__ = "Professor"
+    
+    id = db.Column(db.Interger, primary_key= True)
+    nome = db.Column(db.String(100), nullable= False)
+    idade = db.Column(db.Date, nullable= False)
+    materia = db.column(db.String(100), nullable = False)
+    observacoes = db.column(db.text)
+
+    def __init__(self, nome, idade, materia, observacoes=None):
+        self.nome = nome
+        self.idade = idade
+        self.materia = materia
+        self.observacoes = observacoes
+        self.idade = self.calcular_idade()
+
+    def calcular_idade(self):
+        today = date.today()
+        return today.year - self.data_nascimento.year - (
+            (today.month, today.day) < (self.data_nascimento.month, self.data_nascimento.day)
+        )
 
 
+    def to_dict(self):
+        return{
+            "id": self.id,
+            "nome": self.nome,
+            "idade": self.idade,
+            "materia": self.materia,
+            "observacoes": self.observacoes        
+        }
+    
 class ProfessorNaoEncontrado(Exception):
     pass
 
-class NenhumDado(Exception):
-    pass
-
-class CampoVazio(Exception):
-    pass
-
-def listar_professor():
-    return professores
-
-def get_professor(professor_id):
-    lista_professores = professores
-    for professor in lista_professores:
-        if professor['id'] == professor_id:
-            return professor
-    raise ProfessorNaoEncontrado
+def professor_por_id(id_professor):
+    professor = Professor.query.get(id_professor)
+    if not professor:
+        raise ProfessorNaoEncontrado ()
+    return professor.to_dict()
 
 
-def create_professor(data):
-
-    campos = [
-        'nome', 'idade', 'materia', 'observacoes'
-    ]
-
-    campos_vazio = [campo for campo in campos if not data.get(campo)]
-    if campos_vazio:
-        raise CampoVazio(campos_vazio)
-
-    professor = {'id': len(professores) + 1, **{campo: data[campo] for campo in campos}}
-    professores.append(professor)
-    return professor
+def listar_professores():
+    professores = Professor.query.all()
+    return [prof.to_dict() for prof in professores]
 
 
-
-def update_professor(professor_id, novos_dados):
-    for professor in professores:
-        if professor['id'] == professor_id:
-            dados = novos_dados
-            if not dados:
-                raise NenhumDado
-            campos = [
-                'nome', 'idade', 'materia', 'observacoes'
-            ]
-
-            campos_vazios = []
-            for campo in campos:
-                if campo in dados and (dados[campo] is None or dados[campo] == ""):
-                    campos_vazios.append(campo)
-
-            if campos_vazios:
-                raise CampoVazio(campos_vazios)    
+def adicionar_professor(dados):
+    campos_obrigatorios = ['nome', 'idade', 'materia', 'observacoes']
+    for campo in campos_obrigatorios:
+        if campo not in dados or dados[campo] == '':
+            return{"message": f"campo' {campo}' é obrigatório e nao pode estar vazio."}, 400
         
-            for campo in campos:
-                if campo in dados:
-                    professor[campo] = dados[campo]
-            return professor
+
+        novo_professor = Professor(
+            nome = dados ['nome'],
+            idade = int (dados['idade']),
+            materia = dados['materia'],
+            observacoes=dados.get('observaçoes')
+            
+        )
+
+        db.session.add(novo_professor)
+        db.session.commit()
+
+        return{"message": "Professor foi adicionado com sucesso! "}, 201
 
 
-def delete_professor(professor_id):
-    for professor in professores:
-        if professor['id'] == professor_id:
-            professores.remove(professor)
-            return
-    raise ProfessorNaoEncontrado
+def atualizar_professor(id_professor, dados):
+    professor = Professor.query.get(id_professor)
+    if not professor:   
+     raise ProfessorNaoEncontrado()
+    
+    if 'nome' not in dados or dados['nome'] == '':
+        return {"message": "Campo 'nome' é obrigatório."}, 400
+    if 'idade' not in dados or dados['idade'] == '':
+        return {"message": "Campo 'idade' é obrigatório."}, 400
+    if 'materia' not in dados or dados['materia'] == '':
+        return {"message": "Campo 'materia' é obrigatório."}, 400
+    
 
+    professor.nome = dados['nome']
+    professor.idade = int(dados['idade'])
+    professor.materia = dados ['materia']
+    professor.observacoes = dados.get('observacoes')
+
+    db.session.commit()
+    return{"message": "Informações Atualizadas com sucesso! "}, 200
+
+def excluir_professor(id_professor):
+    professor = Professor.query.get(id_professor)
+    if not professor:
+        raise ProfessorNaoEncontrado()
+
+    db.session.delete(professor)
+    db.session.commit()
+    return   {"message": "Professor foi retirado da lista! "}, 200
+    

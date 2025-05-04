@@ -50,8 +50,7 @@ def atualizar_turma(turma_id):
     except NenhumDado:
         return jsonify({'mensagem': 'Nenhum Dado enviado'}), 400
     except CamposVazio as e:
-        campos_vazios = e.campos_vazios
-        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(campos_vazios)}'}), 400
+        return jsonify({'mensagem': f'Esses campos são obrigatórios e não podem estar vazios: {", ".join(e.args[0])}'}), 400
 
     
     
