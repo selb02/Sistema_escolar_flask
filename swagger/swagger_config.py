@@ -5,7 +5,7 @@ from swagger.namespaces.turma_namespace import turmas_ns
 
 def configure_swagger(app):
     api.init_app(app)
-    api.add_namespace(alunos_ns, path="/alunos")
-    api.add_namespace(professores_ns, path="/professores")
-    api.add_namespace(turmas_ns, path="/turmas")
+    api.add_namespace(alunos_ns, path="/aluno")
+    api.add_namespace(professores_ns, path="/professor")
+    api.add_namespace(turmas_ns, path="/turma")
     api.mask_swagger = False

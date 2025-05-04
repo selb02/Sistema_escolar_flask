@@ -1,15 +1,23 @@
 from datetime import datetime, date
 from config import db
-from turma import Turma
+from turma.turma_model import Turma
 
+class AlunoNaoEncontrado(Exception):
+    pass
 
-class Aluno(db.model):
+class CampoVazio(Exception):
+    pass
+
+class NenhumDado(Exception):
+    pass
+
+class Aluno(db.Model):
     __tablename__ = "alunos"
 
-    id = db.Column(db.interger, primary_key =True)
+    id = db.Column(db.Integer, primary_key =True)
     nome = db.Column(db.String(100), nullable= False)
-    idade= db.Column(db.Interger, nullable= False)
-    turma_id= db.Column(db.interger, nullable= False)
+    idade= db.Column(db.Integer, nullable= False)
+    turma_id= db.Column(db.Integer, nullable= False)
     data_nascimento = db.Column(db.String(10), nullable= False) 
     primeira_nota = db.Column(db.Float, nullable= False)
     segunda_nota = db.Column(db.Float, nullable= False)

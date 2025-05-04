@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from professor.professor_model import listar_professores, professor_por_id, adicionar_professor, atualizar_professor, excluir_professor
+from professor.professor_model import listar_professores, professor_por_id, adicionar_professor, atualizar_professor, delete_professor
 
 professores_ns = Namespace("professores", description="Operações relacionadas aos professores")
 
@@ -45,5 +45,5 @@ class AlunoIdResource(Resource):
         return data, 200
 
     def delete(self, id_aluno):
-        excluir_professor(id_aluno)
+        delete_professor(id_aluno)
         return {"message": "Aluno excluído com sucesso"}, 200

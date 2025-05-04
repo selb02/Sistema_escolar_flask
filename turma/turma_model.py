@@ -6,10 +6,11 @@ class Turma(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable = False)
-    Professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
+    Professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'), nullable=False)
+    professor = db.relationship('professores', backref='turmas', lazy=True) 
     ativo = db.Column(db.Boolean, default=True, nullable =False)
 
-    alunos = db.relationship('Aluno', backpopulates='turma', lazy=True)
+    alunos = db.relationship('Aluno', back_populates='turma', lazy=True)
 
     def __init__(self, descricao, professor_id, ativo):
         self.descricao = descricao

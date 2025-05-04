@@ -1,14 +1,23 @@
 from datetime import datetime, date
 from config import db
 
+class ProfessorNaoEncontrado(Exception):
+    pass
+
+class CampoVazio(Exception):
+    pass
+
+class NenhumDado(Exception):
+    pass
+
 class Professor (db.Model): 
-    __tablename__ = "Professor"
+    __tablename__ = "professores"
     
-    id = db.Column(db.Interger, primary_key= True)
+    id = db.Column(db.Integer, primary_key= True)
     nome = db.Column(db.String(100), nullable= False)
     idade = db.Column(db.Date, nullable= False)
-    materia = db.column(db.String(100), nullable = False)
-    observacoes = db.column(db.text)
+    materia = db.Column(db.String(100), nullable = False)
+    observacoes = db.Column(db.Text)
 
     def __init__(self, nome, idade, materia, observacoes=None):
         self.nome = nome
@@ -33,8 +42,7 @@ class Professor (db.Model):
             "observacoes": self.observacoes        
         }
     
-class ProfessorNaoEncontrado(Exception):
-    pass
+
 
 def professor_por_id(id_professor):
     professor = Professor.query.get(id_professor)
@@ -90,7 +98,7 @@ def atualizar_professor(id_professor, dados):
     db.session.commit()
     return{"message": "Informações Atualizadas com sucesso! "}, 200
 
-def excluir_professor(id_professor):
+def delete_professor(id_professor):
     professor = Professor.query.get(id_professor)
     if not professor:
         raise ProfessorNaoEncontrado()
