@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from aluno.aluno_model import Listar_Alunos, aluno_id, adicionar_aluno, atualizar_aluno, deletar_aluno
+from aluno.aluno_model import Listar_Alunos, buscar_aluno_id, adicionar_aluno, atualizar_aluno, deletar_aluno
 
 alunos_ns = Namespace("alunos", description="Operações relacionadas aos alunos")
 
@@ -41,7 +41,7 @@ class AlunoIdResource(Resource):
     @alunos_ns.marshal_with(aluno_output_model)
     def get(self, id_aluno):
         """Obtém um aluno pelo ID"""
-        return aluno_id(id_aluno)
+        return buscar_aluno_id(id_aluno)
 
     @alunos_ns.expect(aluno_model)
     def put(self, id_aluno):

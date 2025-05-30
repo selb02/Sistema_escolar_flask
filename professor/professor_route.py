@@ -27,7 +27,7 @@ def criando_professor():
 
 
 @professor_blueprint.route('/professor/<int:professor_id>', methods=['PUT'])
-def atualizar_professor(professor_id):
+def Atualizar_professor(professor_id):
     data = request.json
     try:
         professor_atualizado = atualizar_professor(professor_id, data)

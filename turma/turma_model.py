@@ -6,19 +6,20 @@ class Turma(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable = False)
-    Professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'), nullable=False)
-    professor = db.relationship('professores', backref='turmas', lazy=True) 
+    professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'), nullable=False)
+    professor = db.relationship('Professor', backref='turmas', lazy=True) 
     ativo = db.Column(db.Boolean, default=True, nullable =False)
 
     alunos = db.relationship('Aluno', back_populates='turma', lazy=True)
 
-    def __init__(self, descricao, professor_id, ativo):
+    def __init__(self, descricao, professor_id, ativo=True):
         self.descricao = descricao
-        self.Professor_id = professor_id
+        self.professor_id = professor_id
         self.ativo = ativo
 
+
     def to_dict(self):
-        return {'id': self.id, 'descricao': self.descricao, 'Professor_id': self.Professor_id, 'ativo': self.ativo}
+        return {'id': self.id, 'descricao': self.descricao, 'professor_id': self.professor_id, 'ativo': self.ativo}
 
 class Turmanaoencontrada (Exception):
     pass
@@ -34,7 +35,7 @@ def create_turma(data):
         'descricao', 'professor_id', 'ativo'
     ]
     
-    campos_vazio = [ campo for campo in campos if not data.get(campo)]
+    campos_vazio = [campo for campo in campos if data.get(campo) in [None, ""]]
     if campos_vazio:
         raise CamposVazio(campos_vazio)
     
@@ -58,13 +59,13 @@ def Listar_turma():
 def turma_por_id(turma_id):
     turma = Turma.query.get(turma_id)
     if not turma:
-        raise Turmanaoencontrada
+        raise Turmanaoencontrada()
     return turma.to_dict()
     
 def delete_turma(turma_id):
     turma = Turma.query.get(turma_id)
     if not turma:
-        raise Turmanaoencontrada
+        raise Turmanaoencontrada()
     
     db.session.delete(turma)
     db.session.commit()
@@ -73,12 +74,12 @@ def delete_turma(turma_id):
 def update_turma(turma_id, novos_dados):
     turma = Turma.query.get(turma_id)
     if not turma:
-        raise Turmanaoencontrada
+        raise Turmanaoencontrada()
     
     dados = novos_dados
 
     if not dados:
-        raise NenhumDado
+        raise NenhumDado()
     
     campos = [ 
         'descricao', 'professor_id', 'ativo'
@@ -87,39 +88,20 @@ def update_turma(turma_id, novos_dados):
     for campo in campos: 
         if campo in dados and (dados[campo]is None or dados[campo]== ""):
             campos_vazio.append(campo)
-            raise CamposVazio(campos_vazio)
+
+    if campos_vazio:
+        raise CamposVazio(campos_vazio)        
     
     turma.descricao = dados['descricao']
     turma.professor_id = int(dados['professor_id'])
     turma.ativo = bool(dados['ativo'])
 
     db.session.commit()
-    return turma
+    return turma.to_dict(), 200
+
     
     
 
 
 
 
-
-
-
-    # for turma in turmas:
-    #     if turma['id']== turma_id:
-    #         dados = novos_dados
-    #         if not dados:
-    #             raise NenhumDado
-    #         campos = [ 
-    #              'descricao', 'professor_id', 'ativo'
-    #         ]
-    #         campos_vazio = []
-    #         for campo in campos: 
-    #             if campo in dados and (dados[campo]is None or dados[campo]== ""):
-    #                 campos_vazio.append(campo)
-    #                 raise CamposVazio(campos_vazio)
-                
-    #             for campo in campos:
-    #                 if campo in dados:
-    #                     turma[campo]= dados[campo]
-    #             return turma
-    # raise Turmanaoencontrada

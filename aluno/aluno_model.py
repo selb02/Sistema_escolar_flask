@@ -17,23 +17,25 @@ class Aluno(db.Model):
     id = db.Column(db.Integer, primary_key =True)
     nome = db.Column(db.String(100), nullable= False)
     idade= db.Column(db.Integer, nullable= False)
-    turma_id= db.Column(db.Integer, nullable= False)
-    data_nascimento = db.Column(db.String(10), nullable= False) 
+    data_nascimento = db.Column(db.Date, nullable= False) 
     primeira_nota = db.Column(db.Float, nullable= False)
     segunda_nota = db.Column(db.Float, nullable= False)
+    media_final = db.Column(db.Float, nullable = False)
 
-    turma = db.relationship("Turma", back_populates="alunos")
     turma_id = db.Column(db.Integer, db.ForeignKey("turmas.id"), nullable=False)
+    turma = db.relationship("Turma", back_populates="alunos")
 
 
-    def __init__(self, nome, data_nascimento, nota_primeiro_semestre, nota_segundo_semestre, turma_id, media_final):
+
+    def __init__(self, nome, data_nascimento, nota_primeiro_semestre, nota_segundo_semestre, turma_id):
         self.nome = nome
         self.data_nascimento = data_nascimento
-        self.nota_primeiro_semestre = nota_primeiro_semestre
-        self.nota_segundo_semestre = nota_segundo_semestre
+        self.primeira_nota = nota_primeiro_semestre
+        self.segunda_nota = nota_segundo_semestre
         self.turma_id = turma_id
-        self.media_final = media_final
+        self.media_final = (nota_primeiro_semestre + nota_segundo_semestre) / 2
         self.idade = self.calcular_idade()
+
 
     def calcular_idade(self):
         today = date.today()
@@ -41,14 +43,13 @@ class Aluno(db.Model):
     
     def to_dict(self):
         return {'id': self.id, 'nome' : self.nome, 'idade': self.idade, 'data_nascimento' : self.data_nascimento.isoformat(), "primeira_nota": self.primeira_nota, "segunda_nota": self.segunda_nota, "turma_id": self.turma_id, "media_final": self.media_final }
-class alunoNaoEncontrado():
-    pass
 
-def aluno_id(id_aluno):
+
+def buscar_aluno_id(id_aluno):
     aluno= Aluno.query.get(id_aluno)
 
     if not aluno:
-        raise alunoNaoEncontrado()
+        raise AlunoNaoEncontrado()
     return aluno.to_dict()
 
 def Listar_Alunos():
@@ -56,7 +57,7 @@ def Listar_Alunos():
     return [aluno.to_dict() for aluno in alunos]
     
 def adicionar_aluno(novos_dados):
-    turma= Turma.query.get(novos_dados['turma-id'])
+    turma= Turma.query.get(novos_dados['turma_id'])
     if(turma is None):
         return {"message": "Turma não existe"}, 404
     
@@ -66,9 +67,6 @@ def adicionar_aluno(novos_dados):
             nota_primeiro_semestre=float(novos_dados['nota_primeiro_semestre']),
             nota_segundo_semestre=float(novos_dados['nota_segundo_semestre']),
             turma_id=int(novos_dados['turma_id']),
-            media_final=(
-                float(novos_dados['nota_primeiro_semestre']) + float(novos_dados['nota_segundo_semestre'])
-            ) / 2,
     )
 
     db.session.add(novo_aluno)
@@ -82,21 +80,21 @@ def adicionar_aluno(novos_dados):
 def atualizar_aluno(id_aluno, novos_dados):
     aluno = Aluno.query.get(id_aluno)
     if not aluno:
-        raise alunoNaoEncontrado
+        raise AlunoNaoEncontrado()
     
     aluno.nome = novos_dados['nome']
-    aluno.data_nascimento = novos_dados['data_nascimento']
-    aluno.primeira_nota = novos_dados ['Primeira Nota']
-    aluno.segunda_nota = novos_dados ['segunda nota']
-    aluno.media_final = novos_dados (aluno.nota_primeiro_semestre + aluno.nota_segundo_semestre) / 2
+    aluno.data_nascimento = datetime.strptime(novos_dados['data_nascimento'], "%Y-%m-%d").date()
+    aluno.primeira_nota = novos_dados ['nota_primeiro_semestre']
+    aluno.segunda_nota = novos_dados ['nota_segundo_semestre']
+    aluno.media_final = (aluno.primeira_nota + aluno.segunda_nota) / 2
     aluno.turma_id = novos_dados ['turma_id']
     aluno.idade = aluno.calcular_idade()
 
     db.session.commit()
 
 def deletar_aluno(id_aluno):
-    aluno = aluno.query.get(id_aluno)
+    aluno = Aluno.query.get(id_aluno)
     if not aluno:
-        raise alunoNaoEncontrado()
+        raise AlunoNaoEncontrado()
     db.session.delete(aluno)
     db.session.commit()
